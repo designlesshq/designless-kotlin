@@ -20,3 +20,4 @@ pluginManagement {
 }
 
 include("serve")
+include("serve-android")

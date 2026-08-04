@@ -5,13 +5,14 @@ Your brand in a Kotlin or Android app. Colours, type, spacing and marks come fro
 | Artifact | What it is |
 |---|---|
 | `io.designless:serve` | The protocol client. Pure Kotlin/JVM, **zero dependencies**, no Android framework. |
-
-The Android artifact — `Typeface` registration, a Compose theme, a mark composable — is the next piece and depends on this one.
+| `io.designless:serve-android` | The Android layer. Typeface registration, colour and length conversion, a snapshot store, foreground activation. Depends only on the core and the framework. |
 
 ## Install
 
 ```kotlin
 dependencies {
+    implementation("io.designless:serve-android:0.1.0")   // Android
+    // or, on a plain JVM:
     implementation("io.designless:serve:0.1.0")
 }
 ```
@@ -102,6 +103,49 @@ brand.addresses.asset("logo-symbol", format = AssetFormat.SVG, size = AssetSize.
 ```
 
 Sizes are a closed ladder expressed as an enum, so a request the surface refuses cannot be written. `AssetSize.atLeast(200)` rounds up, because a mark drawn larger and scaled down stays sharp. Composed destinations take neither size nor appearance: the destination decides both.
+
+## On Android
+
+```kotlin
+val registry = AndroidFontRegistry(filesDir.resolve("designless-fonts"))
+val staging = androidFontStaging(registry) { url -> httpGetBytes(url) }
+
+val brand = Brand(
+    publicId = "r_XXXX",
+    fetch = ::httpGetText,
+    store = PreferencesSnapshotStore(this),
+)
+
+brand.initialize()
+staging.stage(brand.loadFonts())
+
+// Changes land the next time the app comes to the foreground.
+ForegroundActivation(brand) { recreate() }.attach(application)
+```
+
+**Android has no system-wide runtime font table.** On Apple and on the web, registering a face puts a name into a system table that any later lookup finds. Here a `Typeface` is an object you hold, so `AndroidFontRegistry` *is* that table — you resolve a role through `FontStaging` and look the returned PostScript name up in the registry. Same rule, our table.
+
+`Typeface.createFromFile` returns `Typeface.DEFAULT` rather than throwing when it cannot read a file — a silent substitution dressed as success, and exactly the failure this package exists to prevent. The registry compares against `DEFAULT` and refuses, because that comparison is the only signal available.
+
+### There is no Compose theme in this artifact, on purpose
+
+A `ComposeTheme` here would pull `androidx.compose.*` into every app that wants a logo and pin a Compose version while doing it. The conversions that are easy to get wrong are provided; building a `ColorScheme` from them is about twenty lines, written once, against whatever Compose version you already have:
+
+```kotlin
+val scheme = darkColorScheme(
+    background = Color(brand.tokens!!.colorInt("bg.page")!!),
+    surface    = Color(brand.tokens!!.colorInt("bg.surface")!!),
+    primary    = Color(brand.tokens!!.colorInt("brand.primary")!!),
+)
+
+val body = staging.resolve("body")
+val family = body.postscriptName
+    ?.let { registry[it] }
+    ?.let { FontFamily(Typeface(it)) }
+    ?: FontFamily.Default
+```
+
+`parseCssColor` exists rather than delegating to `Color.parseColor` because the brand publishes `#rrggbbaa` — alpha last, as CSS writes it — and Android's int keeps alpha first. `Color.parseColor` does not accept that form at all. Reading one order as the other gives a colour wrong in both hue and opacity, and still a colour, so nothing looks broken enough to investigate.
 
 ## Threading
 
