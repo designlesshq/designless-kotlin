@@ -7,6 +7,20 @@ plugins {
 }
 
 kotlin {
+// ── THE TOOLCHAIN IS PINNED, AND THAT IS NOT PEDANTRY ───────────────────────
+//
+// 21, not "whatever JDK is on PATH". Built on JDK 26 this fails: the Dokka
+// that AGP bundles for javadoc generation calls IntelliJ's version parser,
+// which throws IllegalArgumentException on "26.0.2" because that JDK is newer
+// than it knows about. Central requires a javadoc jar, so the failure is not
+// skippable.
+//
+// The pure-JVM module got through on JDK 26 only because nothing there invokes
+// Dokka — which is exactly the kind of luck that makes a build look fine until
+// the day it does not. Both modules pin the same toolchain so the JDK doing
+// the compiling is a property of this build, not of whoever runs it.
+    jvmToolchain(21)
+
     compilerOptions {
         // The bytecode target, not the JDK doing the compiling. 11 is what
         // every supported Android configuration accepts without desugaring

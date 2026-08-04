@@ -37,6 +37,10 @@ android {
 }
 
 kotlin {
+    // See the note in :serve. AGP's bundled Dokka cannot parse a JDK 26
+    // version string, and Central requires the javadoc jar it produces.
+    jvmToolchain(21)
+
     compilerOptions {
         // Must match compileOptions above. The Android plugin does not infer
         // one from the other, and a mismatch fails the build rather than

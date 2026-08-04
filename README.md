@@ -147,6 +147,26 @@ val family = body.postscriptName
 
 `parseCssColor` exists rather than delegating to `Color.parseColor` because the brand publishes `#rrggbbaa` — alpha last, as CSS writes it — and Android's int keeps alpha first. `Color.parseColor` does not accept that form at all. Reading one order as the other gives a colour wrong in both hue and opacity, and still a colour, so nothing looks broken enough to investigate.
 
+## Building this repository
+
+Requires **JDK 21**. There is a `.java-version` for jenv and asdf, and both
+modules pin `jvmToolchain(21)`.
+
+Not a preference. On JDK 26 the build fails: the Dokka that AGP bundles for
+javadoc generation calls IntelliJ's version parser, which throws on a version
+string it does not recognise. Maven Central requires a javadoc jar, so it is
+not skippable. The pure-JVM module builds fine on a newer JDK only because
+nothing there invokes Dokka — which is the kind of luck that makes a build
+look healthy until the day it is not.
+
+The toolchain pin covers compilation. The Dokka worker runs on the Gradle
+daemon's own JVM, so `JAVA_HOME` has to point at 21 as well:
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+./gradlew build
+```
+
 ## Threading
 
 `fetch` is blocking and expected to be called off the main thread. Wrapping it in a coroutine, an `Executor` or `WorkManager` is the caller's choice, not this module's — an SDK that picks a concurrency framework picks it for the whole app.
