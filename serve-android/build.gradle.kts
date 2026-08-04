@@ -1,4 +1,5 @@
 plugins {
+    id("com.vanniktech.maven.publish")
     id("com.android.library")
     kotlin("android")
 }
@@ -29,11 +30,10 @@ android {
         }
     }
 
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
+    // No `publishing { singleVariant(...) }` here. The maven-publish plugin
+    // declares the release variant itself, and declaring it twice is a hard
+    // error rather than a merge — which is the right failure, just an easy one
+    // to trip by copying a snippet from the AGP docs.
 }
 
 kotlin {
@@ -55,4 +55,12 @@ kotlin {
 dependencies {
     api(project(":serve"))
     testImplementation(kotlin("test"))
+}
+
+
+mavenPublishing {
+    pom {
+        name.set("Designless Serve for Android")
+        description.set("Your brand in an Android app. Typeface registration, colour and length conversion, and foreground activation.")
+    }
 }

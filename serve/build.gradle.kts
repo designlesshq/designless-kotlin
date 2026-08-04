@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    id("com.vanniktech.maven.publish")
     kotlin("jvm")
     `java-library`
 }
@@ -45,4 +46,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
     testLogging { events("failed") }
+}
+
+
+mavenPublishing {
+    pom {
+        name.set("Designless Serve")
+        description.set("Your brand in a Kotlin app. Tokens, marks and fonts, served at runtime, with no dependencies.")
+    }
 }

@@ -5,3 +5,11 @@ local.properties
 *.iml
 .DS_Store
 local.properties
+
+# Credentials never live here. See the note in build.gradle.kts — the portal
+# token and signing key are read from ~/.gradle/gradle.properties, outside the
+# repo. These patterns are a backstop for a stray file, not the mechanism.
+*.gpg
+*.asc
+secring.*
+gradle.properties
