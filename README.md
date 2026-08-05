@@ -1,5 +1,10 @@
 # designless-kotlin
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-JVM%20%7C%20Android-0A0A0A)](https://kotlinlang.org)
+[![JDK 21](https://img.shields.io/badge/JDK-21-0A0A0A)](#building-this-repository)
+[![Dependencies](https://img.shields.io/badge/dependencies-none-0A0A0A)](#zero-dependencies-including-the-json)
+[![License](https://img.shields.io/badge/license-Apache--2.0-0A0A0A)](LICENSE)
+
 Your brand in a Kotlin or Android app. Colours, type, spacing and marks come from your published brand, and change when you publish.
 
 | Artifact | What it is |
@@ -39,7 +44,7 @@ With a `store`, the last payload is already readable before the first view is in
 
 `org.json` exists on Android and nowhere else; `kotlinx-serialization` would pin a version on every consumer. Dependency conflicts are the loudest complaint about Android libraries, and an SDK whose pitch is "thin client" that drags in a serialization runtime is not one. So this ships a small reader for exactly the subset RFC 8259 defines — no comments, no trailing commas, no NaN — tested against the real payloads and against the malformed input a network eventually hands you.
 
-## Fonts, and the mistake that costs the most
+## Fonts
 
 **A face is reached by its PostScript name.** That is the key you give `Typeface.createFromFile` and the one a Compose `FontFamily` entry carries. The family name is a label for humans.
 
@@ -73,7 +78,7 @@ when {
 
 Substitution is reported rather than passed off as a match. A family publishing only Light, answering a request for Medium, looks exactly like a font that was applied.
 
-## Changes land when you say so
+## Applying changes
 
 A theme applies at inflation on Android, so a mid-session swap gets you a half-updated app: the screen in front of the person keeps the old values while anything created afterwards gets the new ones. A fetched change is **held**:
 
@@ -127,7 +132,7 @@ ForegroundActivation(brand) { recreate() }.attach(application)
 
 `Typeface.createFromFile` returns `Typeface.DEFAULT` rather than throwing when it cannot read a file — a silent substitution dressed as success, and exactly the failure this package exists to prevent. The registry compares against `DEFAULT` and refuses, because that comparison is the only signal available.
 
-### There is no Compose theme in this artifact, on purpose
+### No Compose theme in this artifact, by design
 
 A `ComposeTheme` here would pull `androidx.compose.*` into every app that wants a logo and pin a Compose version while doing it. The conversions that are easy to get wrong are provided; building a `ColorScheme` from them is about twenty lines, written once, against whatever Compose version you already have:
 
@@ -173,4 +178,4 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 
 ## Licence
 
-Apache-2.0
+Apache-2.0. Copyright 2026 Designless Private Limited. [designless.io](https://designless.io)
